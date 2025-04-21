@@ -22,6 +22,7 @@ app.post("/api/authenticate", async (req, res) => {
       body: JSON.stringify({
         client_id: "Ov23liR0SizuIMoX7iLC",
         code,
+        client_secret: "c691edb19f023abc6032565bd2557e2fa854c263",
         redirect_uri: "http://localhost:5173/verify",
         code_verifier,
       }),
