@@ -6,7 +6,28 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// Configuração do CORS para permitir origens específicas
+const allowedOrigins = [
+  "http://localhost:5173", // Frontend local
+  "clone-github-teste-pratico.vercel.app", // Frontend na Vercel (substitua por sua URL real)
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Permite requisições sem origem (como Postman) ou de origens permitidas
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST"], // Métodos permitidos
+    credentials: true, // Permite enviar cookies ou credenciais, se necessário
+  })
+);
+
 app.use(express.json());
 
 app.post("/api/authenticate", async (req, res) => {
@@ -14,6 +35,17 @@ app.post("/api/authenticate", async (req, res) => {
 
   if (!code) {
     return res.status(400).json({ error: "Código de autorização não fornecido" });
+  }
+
+  const clientId = "Ov23liR0SizuIMoX7iLC";
+  const clientSecret = "c691edb19f023abc6032565bd2557e2fa854c263"; 
+  const redirectUri = req.headers.origin === "http://localhost:5173"
+    ? "http://localhost:5173/verify"
+    : "clone-github-teste-pratico.vercel.app"; 
+
+  if (!clientSecret) {
+    console.error("CLIENT_SECRET não está definido nas variáveis de ambiente.");
+    return res.status(500).json({ error: "Erro de configuração do servidor" });
   }
 
   try {
@@ -24,10 +56,10 @@ app.post("/api/authenticate", async (req, res) => {
         Accept: "application/json",
       },
       body: JSON.stringify({
-        client_id: "Ov23liR0SizuIMoX7iLC",
+        client_id: clientId,
         code,
-        client_secret: "c691edb19f023abc6032565bd2557e2fa854c263",
-        redirect_uri: "http://localhost:5173/verify",
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
       }),
     });
 
@@ -35,22 +67,23 @@ app.post("/api/authenticate", async (req, res) => {
 
     if (data.error) {
       console.error("Erro do GitHub:", data);
-      return res.status(400).json({ error: data.error_description });
+      return res.status(400).json({ error: data.error_description || "Erro ao autenticar com o GitHub" });
     }
 
-    if (!data.access_token) {
+    const { access_token } = data;
+    if (!access_token) {
       console.error("Token de acesso não retornado:", data);
       return res.status(400).json({ error: "Token de acesso não retornado pelo GitHub" });
     }
 
-    res.json(data);
+    res.json({ access_token });
   } catch (error) {
-    console.error("Erro no servidor:", error);
+    console.error("Erro no servidor:", error.message);
     res.status(500).json({ error: "Erro interno no servidor" });
   }
 });
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000; // Suporte para porta do ambiente (ex.: Render)
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
