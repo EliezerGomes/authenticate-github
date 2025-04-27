@@ -10,7 +10,7 @@ const app = express();
 // Configuração do CORS para permitir origens específicas
 const allowedOrigins = [
   "http://localhost:5173", // Frontend local
-  "clone-github-ten.vercel.app", // Frontend na Vercel (substitua por sua URL real)
+  "https://clone-github-ten.vercel.app", // Frontend na Vercel (substitua por sua URL real)
 ];
 
 app.use(
