@@ -10,7 +10,7 @@ const app = express();
 // Configuração do CORS para permitir origens específicas
 const allowedOrigins = [
   "http://localhost:5173", // Frontend local
-  "clone-github-teste-pratico.vercel.app", // Frontend na Vercel (substitua por sua URL real)
+  "clone-github-ten.vercel.app", // Frontend na Vercel (substitua por sua URL real)
 ];
 
 app.use(
@@ -41,7 +41,7 @@ app.post("/api/authenticate", async (req, res) => {
   const clientSecret = "c691edb19f023abc6032565bd2557e2fa854c263"; 
   const redirectUri = req.headers.origin === "http://localhost:5173"
     ? "http://localhost:5173/verify"
-    : "clone-github-teste-pratico.vercel.app"; 
+    : "clone-github-ten.vercel.app"; 
 
   if (!clientSecret) {
     console.error("CLIENT_SECRET não está definido nas variáveis de ambiente.");
