@@ -10,7 +10,11 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/api/authenticate", async (req, res) => {
-  const { code, code_verifier } = req.body;
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ error: "Código de autorização não fornecido" });
+  }
 
   try {
     const response = await fetch("https://github.com/login/oauth/access_token", {
@@ -24,7 +28,6 @@ app.post("/api/authenticate", async (req, res) => {
         code,
         client_secret: "c691edb19f023abc6032565bd2557e2fa854c263",
         redirect_uri: "http://localhost:5173/verify",
-        code_verifier,
       }),
     });
 
@@ -33,6 +36,11 @@ app.post("/api/authenticate", async (req, res) => {
     if (data.error) {
       console.error("Erro do GitHub:", data);
       return res.status(400).json({ error: data.error_description });
+    }
+
+    if (!data.access_token) {
+      console.error("Token de acesso não retornado:", data);
+      return res.status(400).json({ error: "Token de acesso não retornado pelo GitHub" });
     }
 
     res.json(data);
